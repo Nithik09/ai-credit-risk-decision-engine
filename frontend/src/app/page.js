@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   BadgeCheck,
@@ -53,6 +53,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [isWaking, setIsWaking] = useState(false);
+  const [wakeMessage, setWakeMessage] = useState("");
+  const [isBackendReady, setIsBackendReady] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -168,6 +171,30 @@ export default function Home() {
     }
   };
 
+  const handleWakeUp = async () => {
+    setIsWaking(true);
+    setWakeMessage("Waking up server… please wait");
+    setError("");
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/health`);
+      if (!response.ok) {
+        throw new Error("Backend not reachable");
+      }
+      setIsBackendReady(true);
+      setWakeMessage("Server is ready.");
+    } catch (err) {
+      setIsBackendReady(false);
+      setWakeMessage("Unable to reach server. Please try again.");
+    } finally {
+      setIsWaking(false);
+    }
+  };
+
+  useEffect(() => {
+    handleWakeUp();
+  }, []);
+
   const normalizedResult = useMemo(() => {
     if (!result) return null;
 
@@ -243,14 +270,29 @@ export default function Home() {
               <h2 className="text-lg font-semibold text-white">Applicant Details</h2>
               <p className="mt-1 text-sm text-slate-300">Complete the fields to get an instant decision.</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setFormData(SAMPLE_DATA)}
-              className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-4 py-2 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20"
-            >
-              Fill Sample Data
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleWakeUp}
+                className="rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-semibold text-white/80 transition hover:bg-white/10"
+              >
+                Wake Up API
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData(SAMPLE_DATA)}
+                className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-4 py-2 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20"
+              >
+                Fill Sample Data
+              </button>
+            </div>
           </div>
+
+          {wakeMessage ? (
+            <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
+              {wakeMessage}
+            </div>
+          ) : null}
 
           <form onSubmit={handleSubmit} className="mt-6 grid gap-5">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -403,7 +445,7 @@ export default function Home() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || isWaking || !isBackendReady}
               className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_0_25px_rgba(99,102,241,0.45)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">

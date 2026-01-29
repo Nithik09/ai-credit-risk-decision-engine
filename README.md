@@ -6,26 +6,26 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Production-grade credit risk scoring for BNPL and installment lending.
-The platform returns probability of default (PD), risk tier, and explainability signals via a FastAPI service and a modern Next.js UI.
+The system returns probability of default (PD), risk tier, and explainability signals through a FastAPI backend and a premium Next.js frontend.
 
 Maintained by **Nithiik Roshan** — LinkedIn: https://www.linkedin.com/in/nithik-roshan-devarajraj-8783192aa
 
 ## Overview
 
-This system evaluates credit applications and produces a decision packet built for FinTech underwriting workflows.
+This project evaluates credit applications and produces a decision packet designed for real underwriting workflows.
 
 **Why it is unique**:
 - End-to-end decisioning: prediction, policying, and explanation in one service.
-- Built-in compliance support: explainability and fairness diagnostics.
-- Production-ready interface: API + UI with deployment guidance.
+- Compliance-ready signals: explainability and fairness diagnostics.
+- Production UI + API with deployment guidance.
 
 ## Key Features
 
 - **PD scoring** with calibrated probabilities.
-- **Explainability** with top feature contributors per decision.
+- **Explainability** with top contributing factors per decision.
 - **Fairness analysis** for bias signals across sensitive attributes.
 - **Monitoring hooks** for drift detection and retraining triggers.
-- **Clean API contract** for easy integration into underwriting systems.
+- **Clean API contract** for easy integration into lending systems.
 
 ## Architecture
 
@@ -43,31 +43,31 @@ This system evaluates credit applications and produces a decision packet built f
 ```
 
 **How it works**:
-1. The UI submits an application payload.
+1. The UI submits the application payload.
 2. FastAPI validates input and builds features.
 3. The model returns PD and a decision tier.
-4. The API responds with decision + top drivers.
+4. The API responds with decision + top reasons.
 
 ## Live Demo & API
 
 - **Live Demo (Vercel):** https://<your-vercel-app>.vercel.app
-- **API Docs (Render):** https://<your-render-service>.onrender.com/docs
+- **API Docs (Railway):** https://<your-railway-service>.up.railway.app/docs
 
 ## Frontend (Next.js)
 
-Location: [frontend-next](frontend-next)
+Location: [frontend](frontend)
 
-### Local Run
+### Local Run (Windows)
 
 ```bash
-cd frontend-next
+cd frontend
 npm install
 npm run dev
 ```
 
 ### Environment
 
-Create `.env.local` in [frontend-next](frontend-next) with:
+Create `.env.local` in [frontend](frontend) with:
 
 ```
 NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
@@ -75,33 +75,30 @@ NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
 
 ### Deployment (Vercel)
 
-1. Import [frontend-next](frontend-next) into Vercel.
-2. Set `NEXT_PUBLIC_API_BASE_URL` to your Render API base.
+1. Set **Root Directory** to `frontend`.
+2. Add environment variable `NEXT_PUBLIC_API_BASE_URL`.
 3. Deploy.
 
 ## Backend (FastAPI)
 
-Entry point: `src/serving/app.py`
+Location: [backend](backend)
 
-### Local Run
+### Local Run (Windows)
 
 ```bash
-python -m uvicorn src.serving.app:app --host 0.0.0.0 --port 8000
-```
-
-### Deployment (Render)
-
-**Build Command**
-
-```
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
+uvicorn src.serving.app:app --reload
 ```
 
-**Start Command**
+### Deployment (Railway)
 
-```
-uvicorn src.serving.app:app --host 0.0.0.0 --port $PORT
-```
+1. Set **Root Directory** to `backend`.
+2. **Build Command**: `pip install -r requirements.txt`
+3. **Start Command**: `uvicorn src.serving.app:app --host 0.0.0.0 --port $PORT`
+4. **Health Check Path**: `/health`
 
 ## Screenshots
 
