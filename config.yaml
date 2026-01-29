@@ -1,0 +1,112 @@
+# AI Credit Risk Engine Configuration
+
+data:
+  raw_path: "data/raw/"
+  processed_path: "data/processed/"
+  train_file: "application_train.csv"
+  test_file: "application_test.csv"
+  bureau_file: "bureau.csv"
+  bureau_balance_file: "bureau_balance.csv"
+  
+feature_engineering:
+  # Missing value strategy
+  numeric_impute_strategy: "median"
+  categorical_impute_strategy: "mode"
+  
+  # Encoding
+  max_categorical_cardinality: 50
+  
+  # Feature selection
+  correlation_threshold: 0.95
+  importance_threshold: 0.001
+
+model:
+  algorithm: "lightgbm"  # or "xgboost"
+  
+  params:
+    n_estimators: 500
+    learning_rate: 0.05
+    max_depth: 7
+    num_leaves: 31
+    min_child_samples: 30
+    subsample: 0.8
+    colsample_bytree: 0.8
+    reg_alpha: 0.1
+    reg_lambda: 0.1
+    random_state: 42
+    n_jobs: -1
+    verbose: -1
+  
+  calibration:
+    method: "isotonic"  # or "platt"
+    cv_folds: 5
+  
+  validation:
+    test_size: 0.2
+    stratify: true
+    cv_folds: 5
+
+risk_scoring:
+  # PD Thresholds for decisions
+  rejection_threshold: 0.50  # Reject if PD > 50%
+  high_risk_threshold: 0.40
+  medium_risk_threshold: 0.20
+  low_risk_threshold: 0.10
+  
+  # Risk Tiers
+  tiers:
+    A: [0.0, 0.10]     # Prime (0-10%)
+    B: [0.10, 0.20]    # Near-prime (10-20%)
+    C: [0.20, 0.40]    # Subprime (20-40%)
+    D: [0.40, 1.0]     # High risk (40%+, reject)
+
+explainability:
+  # SHAP configuration
+  shap_sample_size: 1000
+  num_top_features: 5
+  background_samples: 100
+  
+  # Adverse action reasons
+  min_impact_threshold: 0.01
+
+fairness:
+  # Protected/proxy attributes to analyze
+  proxy_features:
+    - "CODE_GENDER"
+    - "AGE_GROUP"
+    - "REGION_RATING_CLIENT"
+  
+  # Fairness metrics
+  metrics:
+    - "approval_rate"
+    - "true_positive_rate"
+    - "false_positive_rate"
+    - "precision"
+  
+  # Thresholds for disparate impact
+  disparate_impact_threshold: 0.8
+
+monitoring:
+  # Population Stability Index
+  psi_threshold: 0.1
+  psi_bins: 10
+  
+  # Drift detection
+  drift_check_frequency: 1000  # Check every N predictions
+  
+  # Retraining triggers
+  retrain_on_psi: true
+  retrain_psi_threshold: 0.15
+  retrain_on_performance_drop: true
+  performance_drop_threshold: 0.05  # 5% AUC drop
+
+api:
+  title: "Credit Risk AI Engine"
+  version: "1.0.0"
+  description: "Production-grade credit risk scoring API with explainability and fairness"
+  
+logging:
+  level: "INFO"
+  format: "{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} | {message}"
+  rotation: "100 MB"
+  retention: "30 days"
