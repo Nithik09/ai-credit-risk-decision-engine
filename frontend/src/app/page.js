@@ -535,6 +535,13 @@ export default function Home() {
           )}
         </motion.aside>
       </main>
+
+      <footer className="relative z-10 border-t border-white/10 bg-black/40 py-6">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 text-xs text-slate-400">
+          <span>Built by Nithik Roshan</span>
+          <span>AI Credit Risk Engine</span>
+        </div>
+      </footer>
     </div>
   );
 }
