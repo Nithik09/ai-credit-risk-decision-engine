@@ -37,9 +37,23 @@ from loguru import logger
 from datetime import datetime
 
 # Import custom modules
-SRC_DIR = Path(__file__).resolve().parents[1]
-BASE_DIR = Path(__file__).resolve().parents[2]
+BASE_DIR = Path(__file__).resolve().parent
+SRC_DIR = BASE_DIR.parent
+ARTIFACTS_DIR = (BASE_DIR / ".." / "artifacts").resolve()
+ALT_ARTIFACTS_DIR = (BASE_DIR / ".." / ".." / "artifacts").resolve()
+MODEL_DIR = (BASE_DIR / ".." / ".." / "models").resolve()
 sys.path.append(str(SRC_DIR))
+
+EXPECTED_ARTIFACTS = [
+    "credit_risk_model_base.pkl",
+    "credit_risk_model_calibrated.pkl",
+    "credit_risk_model_features.pkl",
+    "feature_names.pkl",
+    "label_encoders.pkl",
+    "scaler.pkl",
+    "explainer_artifacts.pkl",
+    "monitoring_state.pkl"
+]
 
 from model.model_training import CreditRiskModel
 from model.decision_engine import DecisionEngine
@@ -202,23 +216,35 @@ async def startup_event():
     
     try:
         # Load configuration
-        config_path = BASE_DIR / "config.yaml"
+        config_path = (BASE_DIR / ".." / ".." / "config.yaml").resolve()
         if config_path.exists():
             with open(config_path, 'r') as f:
                 state.config = yaml.safe_load(f)
         
         # Load model
-        artifacts_path = BASE_DIR / "artifacts"
-        model_path = BASE_DIR / "models"
-        selected_path = artifacts_path if artifacts_path.exists() else model_path
+        # Log available files in primary artifacts dir for debugging
+        if ARTIFACTS_DIR.exists():
+            available_files = [p.name for p in ARTIFACTS_DIR.iterdir() if p.is_file()]
+            logger.info(f"Artifacts available in {ARTIFACTS_DIR}: {available_files}")
+        else:
+            logger.info(f"Artifacts directory not found: {ARTIFACTS_DIR}")
 
-        if selected_path.exists():
+        selected_path = None
+        for candidate in [ARTIFACTS_DIR, ALT_ARTIFACTS_DIR, MODEL_DIR]:
+            if candidate.exists() and any(candidate.iterdir()):
+                selected_path = candidate
+                break
+
+        if selected_path:
             state.model = CreditRiskModel()
             state.model.load_model(load_dir=str(selected_path))
             state.feature_names = state.model.feature_names
             logger.info(f"Model loaded with {len(state.feature_names)} features")
         else:
-            state.model_load_error = "Model artifacts not found. Ensure artifacts exist in /artifacts or /models."
+            state.model_load_error = (
+                "Model artifacts not found. Expected files: "
+                + ", ".join(EXPECTED_ARTIFACTS)
+            )
             logger.warning(state.model_load_error)
         
         # Initialize decision engine

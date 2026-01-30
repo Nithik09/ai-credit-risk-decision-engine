@@ -31,6 +31,10 @@ models/*
 backend/models/*
 !models/.gitkeep
 !backend/models/.gitkeep
+!backend/artifacts/
+!backend/artifacts/**
+!backend/src/artifacts/
+!backend/src/artifacts/**
 
 # Logs
 logs/

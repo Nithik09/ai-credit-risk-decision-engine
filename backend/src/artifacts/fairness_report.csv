@@ -1,0 +1,9 @@
+proxy_feature,metric,advantaged_group,advantaged_value,disadvantaged_group,disadvantaged_value,disparate_impact_ratio,passes_80_rule,absolute_difference
+CODE_GENDER,approval_rate,0.0,0.0,0.0,0.0,0.0,False,0.0
+CODE_GENDER,true_positive_rate,0.0,1.0,0.0,1.0,1.0,True,0.0
+CODE_GENDER,false_positive_rate,0.0,1.0,0.0,1.0,1.0,True,0.0
+CODE_GENDER,precision,0.0,0.6417910447761194,1.0,0.5471698113207547,0.8525669153137341,True,0.09462123345536466
+REGION_RATING_CLIENT,approval_rate,2.0,0.0,2.0,0.0,0.0,False,0.0
+REGION_RATING_CLIENT,true_positive_rate,2.0,1.0,2.0,1.0,1.0,True,0.0
+REGION_RATING_CLIENT,false_positive_rate,2.0,1.0,2.0,1.0,1.0,True,0.0
+REGION_RATING_CLIENT,precision,3.0,0.6923076923076923,1.0,0.5384615384615384,0.7777777777777778,False,0.15384615384615385
