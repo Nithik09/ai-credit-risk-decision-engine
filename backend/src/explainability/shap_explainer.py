@@ -36,7 +36,13 @@ class ModelExplainer:
             X_background: Background dataset for SHAP (typically training sample)
             config_path: Path to configuration file
         """
-        with open(config_path, 'r') as f:
+        config_file = Path(config_path)
+        if not config_file.exists():
+            root_config = Path(__file__).resolve().parents[2] / "config.yaml"
+            if root_config.exists():
+                config_file = root_config
+
+        with open(config_file, 'r') as f:
             self.config = yaml.safe_load(f)
         
         self.model = model

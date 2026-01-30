@@ -6,8 +6,8 @@
 ## 🎯 Phase 1: Testing & Validation (Today - 30 mins)
 
 ### ✅ Local Testing
-- [x] Backend running at http://127.0.0.1:8000
-- [x] Frontend running at http://localhost:5173
+- [x] Backend running at https://<your-backend-url>
+- [x] Frontend running at https://<your-frontend-url>
 - [x] CORS configured properly
 - [ ] Test "Load Example Applicant" button
 - [ ] Test manual form submission
@@ -18,7 +18,7 @@
 - [ ] Test on mobile view (responsive design)
 
 ### ✅ API Testing
-- [ ] Visit http://127.0.0.1:8000/docs
+- [ ] Visit https://<your-backend-url>/docs
 - [ ] Test `/health` endpoint
 - [ ] Test `/score` endpoint with sample data
 - [ ] Verify JSON response structure

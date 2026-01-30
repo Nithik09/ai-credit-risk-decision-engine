@@ -135,7 +135,6 @@ app = FastAPI(
 
 # CORS middleware - Configure for frontend access
 allowed_origins = [
-    "http://localhost:3000",  # Local Next.js dev server
     "https://*.vercel.app",   # Vercel preview deployments
     # Add your custom Vercel domain here, e.g. "https://credit-risk-checker.vercel.app"
 ]

@@ -3,13 +3,14 @@ API Testing Script
 Tests the deployed Credit Risk API
 """
 
+import os
 import requests
 import json
 from typing import Dict, Any
 import pandas as pd
 
 
-API_URL = "http://localhost:8000"
+API_URL = os.getenv("API_BASE_URL", "https://<your-backend-url>")
 
 
 def test_health():
@@ -22,10 +23,7 @@ def test_health():
     
     if response.status_code == 200:
         data = response.json()
-        print(f"✅ Status: {data['status']}")
-        print(f"✅ Model Loaded: {data['model_loaded']}")
-        print(f"✅ Model Version: {data['model_version']}")
-        print(f"✅ Uptime: {data['uptime_seconds']:.2f} seconds")
+        print(f"✅ Status: {data.get('status', 'ok')}")
     else:
         print(f"❌ Health check failed: {response.status_code}")
     

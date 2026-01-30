@@ -77,6 +77,12 @@ export const convertFormToFeatures = (formData) => {
  */
 export const scoreApplication = async (formData) => {
   try {
+    if (!API_BASE_URL) {
+      return {
+        success: false,
+        error: 'API base URL is not configured. Set NEXT_PUBLIC_API_BASE_URL.'
+      };
+    }
     const features = convertFormToFeatures(formData);
     const response = await api.post('/score', features);
     return {

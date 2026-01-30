@@ -4,14 +4,14 @@
 
 ### Backend (FastAPI)
 - **Status**: ✅ Running
-- **URL**: http://127.0.0.1:8000
+- **URL**: https://<your-backend-url>
 - **Health**: `{"status":"healthy","model_loaded":true,"model_version":"1.0.0"}`
 - **Model**: 80 features loaded, 76.58% AUC
-- **API Docs**: http://127.0.0.1:8000/docs
+- **API Docs**: https://<your-backend-url>/docs
 
 ### Frontend (React + Vite)
 - **Status**: ✅ Running
-- **URL**: http://localhost:5173
+- **URL**: https://<your-frontend-url>
 - **Build Tool**: Vite v5.4.21
 - **Framework**: React 18.2.0
 - **Styling**: Tailwind CSS 3.4.0
@@ -19,8 +19,7 @@
 ### CORS Configuration
 - **Status**: ✅ Configured
 - **Allowed Origins**: 
-  - `http://localhost:5173` (local dev)
-  - `http://127.0.0.1:5173` (alternative)
+   - `https://<your-frontend-url>` (production)
   - `https://*.vercel.app` (Vercel deployment)
   - `https://*.netlify.app` (Netlify deployment)
 
@@ -30,7 +29,7 @@
 
 ### Test 1: Load Example Applicant
 
-1. Open: http://localhost:5173
+1. Open: https://<your-frontend-url>
 2. Click the blue **"Load Example Applicant"** button
 3. Verify form is filled with:
    - **Name**: Nithik Roshan
@@ -78,7 +77,7 @@ Edit `frontend/src/App.jsx`:
 
 ### Option 2: Test the API Directly
 
-Open: http://127.0.0.1:8000/docs
+Open: https://<your-backend-url>/docs
 
 Try the interactive Swagger UI:
 1. Expand **POST /score**
@@ -135,7 +134,7 @@ Perfect for LinkedIn showcase:
 
 **Check**: Is backend running?
 ```powershell
-(Invoke-WebRequest -Uri http://127.0.0.1:8000/health).Content
+(Invoke-WebRequest -Uri https://<your-backend-url>/health).Content
 ```
 
 **Solution**: If not, restart backend:
@@ -247,7 +246,7 @@ npm run dev
 ## 📞 Next Actions
 
 ### Immediate (Now)
-1. ✅ Test the application at http://localhost:5173
+1. ✅ Test the application at https://<your-frontend-url>
 2. ✅ Load example applicant and submit
 3. ✅ Verify results display correctly
 

@@ -46,7 +46,7 @@ const cardMotion = {
   transition: { duration: 0.6, ease: "easeOut" }
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function Home() {
   const [formData, setFormData] = useState(INITIAL_FORM);
@@ -56,6 +56,7 @@ export default function Home() {
   const [isWaking, setIsWaking] = useState(false);
   const [wakeMessage, setWakeMessage] = useState("");
   const [isBackendReady, setIsBackendReady] = useState(false);
+  const isApiConfigured = Boolean(API_BASE_URL);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -102,6 +103,11 @@ export default function Home() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (!isApiConfigured) {
+      setError("API base URL is not configured. Set NEXT_PUBLIC_API_BASE_URL.");
+      return;
+    }
+
     const validationError = validate();
     if (validationError) {
       setError(validationError);
@@ -132,7 +138,7 @@ export default function Home() {
           ? -(2 * 365)
           : -30;
 
-      const response = await fetch(`${API_BASE_URL}/score`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/score`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -172,12 +178,17 @@ export default function Home() {
   };
 
   const handleWakeUp = async () => {
+    if (!isApiConfigured) {
+      setIsBackendReady(false);
+      setWakeMessage("API base URL is not configured. Set NEXT_PUBLIC_API_BASE_URL.");
+      return;
+    }
     setIsWaking(true);
     setWakeMessage("Waking up server… please wait");
     setError("");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/health`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/health`);
       if (!response.ok) {
         throw new Error("Backend not reachable");
       }
@@ -445,7 +456,7 @@ export default function Home() {
 
             <button
               type="submit"
-              disabled={loading || isWaking || !isBackendReady}
+              disabled={loading || isWaking || !isBackendReady || !isApiConfigured}
               className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_0_25px_rgba(99,102,241,0.45)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">

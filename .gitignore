@@ -27,13 +27,9 @@ backend/data/processed/*
 !backend/data/processed/.gitkeep
 
 # Models
-models/*
-backend/models/*
-!models/.gitkeep
-!backend/models/.gitkeep
-!backend/artifacts/
+!models/**
+!backend/models/**
 !backend/artifacts/**
-!backend/src/artifacts/
 !backend/src/artifacts/**
 
 # Logs

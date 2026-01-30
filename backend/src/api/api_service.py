@@ -42,6 +42,8 @@ SRC_DIR = BASE_DIR.parent
 ARTIFACTS_DIR = (BASE_DIR / ".." / "artifacts").resolve()
 ALT_ARTIFACTS_DIR = (BASE_DIR / ".." / ".." / "artifacts").resolve()
 MODEL_DIR = (BASE_DIR / ".." / ".." / "models").resolve()
+ENV_ARTIFACTS_DIR = os.getenv("ARTIFACTS_DIR")
+ENV_MODEL_DIR = os.getenv("MODEL_DIR")
 sys.path.append(str(SRC_DIR))
 
 EXPECTED_ARTIFACTS = [
@@ -54,6 +56,58 @@ EXPECTED_ARTIFACTS = [
     "explainer_artifacts.pkl",
     "monitoring_state.pkl"
 ]
+
+REQUIRED_ARTIFACTS = [
+    "credit_risk_model_base.pkl",
+    "credit_risk_model_calibrated.pkl",
+    "feature_names.pkl",
+    "label_encoders.pkl",
+    "scaler.pkl"
+]
+
+EXPECTED_MODEL_FILES = [
+    (MODEL_DIR / "credit_risk_model_base.pkl").resolve(),
+    (ARTIFACTS_DIR / "credit_risk_model_base.pkl").resolve()
+]
+
+
+def _list_files(path: Path) -> List[str]:
+    if path.exists():
+        return [p.name for p in path.iterdir() if p.is_file()]
+    return []
+
+
+def _has_required_artifacts(path: Path) -> bool:
+    return all((path / name).exists() for name in REQUIRED_ARTIFACTS)
+
+
+def _candidate_paths() -> List[Path]:
+    candidates: List[Path] = []
+
+    if ENV_ARTIFACTS_DIR:
+        candidates.append(Path(ENV_ARTIFACTS_DIR).resolve())
+    if ENV_MODEL_DIR:
+        candidates.append(Path(ENV_MODEL_DIR).resolve())
+
+    candidates.extend([
+        ARTIFACTS_DIR,
+        ALT_ARTIFACTS_DIR,
+        MODEL_DIR,
+        (BASE_DIR / ".." / ".." / ".." / "artifacts").resolve(),
+        (BASE_DIR / ".." / ".." / ".." / "models").resolve(),
+        (Path.cwd() / "artifacts").resolve(),
+        (Path.cwd() / "models").resolve(),
+        (Path.cwd() / "backend" / "artifacts").resolve(),
+        (Path.cwd() / "backend" / "models").resolve(),
+    ])
+
+    seen = set()
+    unique: List[Path] = []
+    for p in candidates:
+        if str(p) not in seen:
+            unique.append(p)
+            seen.add(str(p))
+    return unique
 
 from model.model_training import CreditRiskModel
 from model.decision_engine import DecisionEngine
@@ -153,6 +207,7 @@ class HealthResponse(BaseModel):
     model_loaded: bool
     model_version: str
     uptime_seconds: float
+    detail: Optional[str] = None
 
 
 # ==================== FastAPI App ====================
@@ -166,10 +221,7 @@ app = FastAPI(
 )
 
 # CORS middleware - Configure for frontend access
-allowed_origins = [
-    "http://localhost:3000",  # Local Next.js dev server
-    # Add your custom Vercel domain here, e.g. "https://credit-risk-checker.vercel.app"
-]
+allowed_origins = []
 
 vercel_domain = os.getenv("VERCEL_DOMAIN")
 if vercel_domain:
@@ -203,8 +255,47 @@ class AppState:
         self.start_time: datetime = datetime.now()
         self.request_count: int = 0
         self.model_load_error: Optional[str] = None
+        self.model_path: Optional[Path] = None
 
 state = AppState()
+
+
+def _try_load_model() -> Optional[Path]:
+    if state.model:
+        return state.model_path
+
+    candidates = _candidate_paths()
+    selected_path = None
+    for candidate in candidates:
+        if candidate.exists() and _has_required_artifacts(candidate):
+            selected_path = candidate
+            break
+
+    if not selected_path:
+        state.model_load_error = (
+            "Model artifacts not found. Expected files: "
+            + ", ".join(EXPECTED_ARTIFACTS)
+            + ". Expected base model path(s): "
+            + ", ".join(str(p) for p in EXPECTED_MODEL_FILES)
+            + ". Searched: "
+            + ", ".join(str(p) for p in candidates)
+        )
+        return None
+
+    try:
+        state.model = CreditRiskModel()
+        state.model.load_model(load_dir=str(selected_path))
+        state.feature_names = state.model.feature_names
+        state.model_path = selected_path
+        state.model_load_error = None
+        logger.info(f"Model loaded with {len(state.feature_names)} features")
+        return selected_path
+    except Exception as exc:
+        state.model = None
+        state.model_path = None
+        state.model_load_error = f"Model load failed from {selected_path}: {exc}"
+        logger.error(state.model_load_error)
+        return None
 
 
 # ==================== Startup & Shutdown ====================
@@ -222,29 +313,16 @@ async def startup_event():
                 state.config = yaml.safe_load(f)
         
         # Load model
-        # Log available files in primary artifacts dir for debugging
-        if ARTIFACTS_DIR.exists():
-            available_files = [p.name for p in ARTIFACTS_DIR.iterdir() if p.is_file()]
-            logger.info(f"Artifacts available in {ARTIFACTS_DIR}: {available_files}")
-        else:
-            logger.info(f"Artifacts directory not found: {ARTIFACTS_DIR}")
+        candidates = _candidate_paths()
+        for candidate in candidates:
+            files = _list_files(candidate)
+            if files:
+                logger.info(f"Artifacts available in {candidate}: {files}")
+            else:
+                logger.info(f"Artifacts directory not found or empty: {candidate}")
 
-        selected_path = None
-        for candidate in [ARTIFACTS_DIR, ALT_ARTIFACTS_DIR, MODEL_DIR]:
-            if candidate.exists() and any(candidate.iterdir()):
-                selected_path = candidate
-                break
-
-        if selected_path:
-            state.model = CreditRiskModel()
-            state.model.load_model(load_dir=str(selected_path))
-            state.feature_names = state.model.feature_names
-            logger.info(f"Model loaded with {len(state.feature_names)} features")
-        else:
-            state.model_load_error = (
-                "Model artifacts not found. Expected files: "
-                + ", ".join(EXPECTED_ARTIFACTS)
-            )
+        selected_path = _try_load_model()
+        if not selected_path and state.model_load_error:
             logger.warning(state.model_load_error)
         
         # Initialize decision engine
@@ -254,9 +332,10 @@ async def startup_event():
         state.monitor = ModelMonitor()
         
         # Load monitoring state if exists
-        monitoring_state_path = model_path / "monitoring_state.pkl"
-        if monitoring_state_path.exists():
-            state.monitor.load_monitoring_state(load_dir=str(model_path))
+        if state.model_path:
+            monitoring_state_path = state.model_path / "monitoring_state.pkl"
+            if monitoring_state_path.exists():
+                state.monitor.load_monitoring_state(load_dir=str(state.model_path))
         
         state.start_time = datetime.now()
         logger.info("Credit Risk Engine API started successfully")
@@ -307,6 +386,8 @@ async def score_application(
     """
     start_time = datetime.now()
     
+    if not state.model:
+        _try_load_model()
     if not state.model:
         detail = state.model_load_error or "Model artifacts not found. Ensure artifacts exist in /artifacts or /models."
         raise HTTPException(status_code=503, detail=detail)

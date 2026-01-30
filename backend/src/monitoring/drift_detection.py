@@ -27,7 +27,13 @@ class ModelMonitor:
     
     def __init__(self, config_path: str = "config.yaml"):
         """Initialize model monitor with configuration."""
-        with open(config_path, 'r') as f:
+        config_file = Path(config_path)
+        if not config_file.exists():
+            root_config = Path(__file__).resolve().parents[2] / "config.yaml"
+            if root_config.exists():
+                config_file = root_config
+
+        with open(config_file, 'r') as f:
             self.config = yaml.safe_load(f)
         
         self.monitoring_config = self.config['monitoring']

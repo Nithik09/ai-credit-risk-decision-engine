@@ -93,7 +93,7 @@ pip install -r requirements.txt
 python src/api/api_service.py
 ```
 
-Backend runs at http://127.0.0.1:8000
+Backend runs at https://<your-backend-url>
 
 ### Frontend
 
@@ -103,7 +103,7 @@ npm install
 npm run dev
 ```
 
-Frontend runs at http://localhost:5173 (or next available port)
+Frontend runs at https://<your-frontend-url>
 
 ---
 

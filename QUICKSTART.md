@@ -67,11 +67,11 @@ cd src/api
 python api_service.py
 ```
 
-Server runs at: http://localhost:8000
+Server runs at: https://<your-backend-url>
 
 ### 5. Test API
 
-Open browser: http://localhost:8000/docs
+Open browser: https://<your-backend-url>/docs
 
 Or run test script:
 ```bash
@@ -81,7 +81,7 @@ python scripts/test_api.py
 ## 🎯 First API Call
 
 ```bash
-curl -X POST "http://localhost:8000/score" \
+curl -X POST "https://<your-backend-url>/score" \
   -H "Content-Type: application/json" \
   -d '{
     "age": 35,
@@ -170,7 +170,7 @@ background_samples: 50
 ## 📚 Resources
 
 - **Full Documentation**: README.md
-- **API Docs**: http://localhost:8000/docs
+- **API Docs**: https://<your-backend-url>/docs
 - **Configuration**: config.yaml
 - **Dataset Info**: https://www.kaggle.com/c/home-credit-default-risk
 

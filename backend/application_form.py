@@ -27,7 +27,7 @@ To check if you can get a loan, you need to provide these details:
 ├─────────────────────────────────────────────────────────────────────────────┤
 │   • Age (in years)                                                          │
 │   • Gender (M/F)                                                            │
-│   • Number of children                                                      │
+curl -X POST "https://<your-backend-url>/score" \\
 │   • Number of family members                                                │
 │   • Education level                                                         │
 │   • Marital status                                                          │
@@ -252,7 +252,7 @@ print("""
 
 OR use the API (after starting the API server):
 
-curl -X POST "http://localhost:8000/score" \\
+curl -X POST "https://<your-backend-url>/score" \\
   -H "Content-Type: application/json" \\
   -d '{
     "AMT_INCOME_TOTAL": 120000,

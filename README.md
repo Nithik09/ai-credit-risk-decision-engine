@@ -51,7 +51,7 @@ This project evaluates credit applications and produces a decision packet design
 ## Live Demo & API
 
 - **Live Demo (Vercel):** https://<your-vercel-app>.vercel.app
-- **API Docs (Railway):** https://<your-railway-service>.up.railway.app/docs
+- **API Base URL (Render):** https://<your-render-service>.onrender.com
 
 ## Frontend (Next.js)
 
@@ -69,14 +69,22 @@ npm run dev
 
 Create `.env.local` in [frontend](frontend) with:
 
+- **Local development**
+
 ```
-NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_API_BASE_URL=http://<your-local-backend-host>:<port>
+```
+
+- **Production (Vercel)**
+
+```
+NEXT_PUBLIC_API_BASE_URL=https://<your-render-service>.onrender.com
 ```
 
 ### Deployment (Vercel)
 
 1. Set **Root Directory** to `frontend`.
-2. Add environment variable `NEXT_PUBLIC_API_BASE_URL`.
+2. Add environment variable `NEXT_PUBLIC_API_BASE_URL` (Render URL).
 3. Deploy.
 
 ## Backend (FastAPI)
@@ -93,12 +101,13 @@ pip install -r requirements.txt
 uvicorn src.serving.app:app --reload
 ```
 
-### Deployment (Railway)
+### Deployment (Render)
 
 1. Set **Root Directory** to `backend`.
 2. **Build Command**: `pip install -r requirements.txt`
 3. **Start Command**: `uvicorn src.serving.app:app --host 0.0.0.0 --port $PORT`
 4. **Health Check Path**: `/health`
+5. Add environment variables (optional): `ALLOWED_ORIGINS` for your Vercel domain.
 
 ## Screenshots
 
